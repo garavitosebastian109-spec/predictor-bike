@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bike Sharing — ML Predictor</title>
+
+  <!-- Flask sirve los archivos estáticos desde /static/ -->
+  <link rel="stylesheet" href="/static/style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-icon">🚲</div>
+      <div>
+        <h1 class="logo-title">Bike Sharing Predictor</h1>
+        <p class="logo-sub">Regresión Logística &amp; Red Neuronal Artificial — UCI Dataset</p>
+      </div>
+    </div>
+    <div class="estado-badge" id="estado-badge">Verificando modelos…</div>
+  </header>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main">
+
+    <!-- ─── PASO 1: SELECCIÓN DE MODELO ─── -->
+    <section class="seccion">
+      <p class="paso-label"><span class="paso-num">01</span> Selecciona el modelo a usar</p>
+
+      <div class="modelo-grid">
+
+        <button class="modelo-card" id="card-rl" onclick="seleccionarModelo('rl')">
+          <div class="modelo-badge badge-rl">Regresión Logística</div>
+          <h2 class="modelo-nombre">Modelo RL</h2>
+          <p class="modelo-desc">
+            Clasificación basada en probabilidades. Interpreta el efecto
+            de cada variable (temperatura, clima, día) sobre la demanda
+            de bicicletas. Modelo lineal, rápido e interpretable.
+          </p>
+          <span class="modelo-check" id="check-rl">✓</span>
+        </button>
+
+        <button class="modelo-card" id="card-rna" onclick="seleccionarModelo('rna')">
+          <div class="modelo-badge badge-rna">Red Neuronal Artificial</div>
+          <h2 class="modelo-nombre">Modelo RNA</h2>
+          <p class="modelo-desc">
+            Red neuronal multicapa (Dense → BatchNorm → Dropout).
+            Captura interacciones no lineales entre variables como
+            temporada, humedad y temperatura.
+          </p>
+          <span class="modelo-check" id="check-rna">✓</span>
+        </button>
+
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Alertas -->
+    <div class="alerta alerta-warn oculto" id="alerta-modelo">
+      ⚠ Debes seleccionar un modelo antes de continuar.
+    </div>
+    <div class="alerta alerta-error oculto" id="alerta-no-entrenado"></div>
+
+    <!-- ─── PASO 2: TIPO DE PREDICCIÓN ─── -->
+    <section class="seccion">
+      <p class="paso-label"><span class="paso-num">02</span> Tipo de predicción</p>
+
+      <div class="tabs">
+        <button class="tab activo" id="tab-individual" onclick="cambiarTab('individual')">
+          Predicción Individual
+        </button>
+        <button class="tab" id="tab-lotes" onclick="cambiarTab('lotes')">
+          Predicción por Lotes
+        </button>
+      </div>
+
+      <!-- ══ PANEL INDIVIDUAL ══ -->
+      <div class="panel" id="panel-individual">
+        <p class="paso-label" style="margin-bottom:1.2rem;">
+          <span class="paso-num">03</span> Ingresa los datos del día
+        </p>
+
+        <div class="alerta alerta-info" style="margin-bottom:1.2rem;">
+          ℹ Completa las variables del día que deseas predecir.
+          Los valores están normalizados según el dataset UCI Bike Sharing.
+          <strong>Target:</strong> Alta Demanda = <code>cnt &gt; mediana diaria</code>
+        </div>
+
+        <div class="form-grid" id="form-individual">
+          <!-- Campos generados dinámicamente por script.js -->
+        </div>
+
+        <button class="btn" id="btn-predecir-individual" onclick="predecirIndividual()">
+          ⚡ Predecir Demanda
+        </button>
+
+        <div class="spinner oculto" id="spinner-individual"></div>
+
+        <!-- Resultado -->
+        <div class="resultado-box oculto" id="resultado-individual">
+          <p class="resultado-label">Resultado de la predicción</p>
+          <div class="resultado-main">
+            <span class="resultado-clase" id="res-clase"></span>
+            <div class="resultado-detalle" id="res-detalle"></div>
+          </div>
+          <div class="barra-wrap">
+            <div class="barra-fill" id="barra-fill"></div>
+          </div>
+          <p class="barra-label" id="barra-label"></p>
+        </div>
+      </div>
+
+      <!-- ══ PANEL LOTES ══ -->
+      <div class="panel oculto" id="panel-lotes">
+        <p class="paso-label" style="margin-bottom:1.2rem;">
+          <span class="paso-num">03</span> Carga tu archivo CSV con etiquetas reales
+        </p>
+
+        <div class="alerta alerta-info" style="margin-bottom:1.2rem;">
+          ℹ El CSV debe tener las columnas de features más una columna
+          llamada <code>target</code> con los valores reales (0=Baja Demanda, 1=Alta Demanda).
+          Puedes usar el mismo <code>dataset.csv</code> con la columna <code>alta_demanda</code>
+          renombrada a <code>target</code>.
+        </div>
+
+        <label class="upload-zona" id="upload-zona">
+          <input
+            type="file"
+            id="archivo-lotes"
+            accept=".csv"
+            onchange="manejarArchivo(event)"
+          />
+          <span class="upload-icono">📂</span>
+          <strong id="upload-titulo">Arrastra o selecciona tu archivo CSV</strong>
+          <span class="upload-sub" id="upload-sub">Máx. 10 MB · Solo .csv</span>
+        </label>
+
+        <div style="margin-top:1rem;">
+          <button class="btn" id="btn-evaluar" onclick="evaluarLotes()">
+            📊 Calcular métricas
+          </button>
+        </div>
+
+        <div class="spinner oculto" id="spinner-lotes"></div>
+
+        <!-- Resultados por lotes -->
+        <div class="lotes-resultado oculto" id="lotes-resultado">
+
+          <hr class="divider" style="margin:1.8rem 0;" />
+          <p class="paso-label">
+            <span class="paso-num">Métricas</span> Desempeño del modelo
+          </p>
+
+          <div class="metricas-grid">
+            <div class="metrica-card">
+              <p class="metrica-nombre">Exactitud</p>
+              <p class="metrica-valor verde" id="m-accuracy">—</p>
+              <p class="metrica-sub">Accuracy</p>
+            </div>
+            <div class="metrica-card">
+              <p class="metrica-nombre">Precisión</p>
+              <p class="metrica-valor morado" id="m-precision">—</p>
+              <p class="metrica-sub">Precision</p>
+            </div>
+            <div class="metrica-card">
+              <p class="metrica-nombre">Sensibilidad</p>
+              <p class="metrica-valor naranja" id="m-recall">—</p>
+              <p class="metrica-sub">Recall</p>
+            </div>
+            <div class="metrica-card">
+              <p class="metrica-nombre">F1-Score</p>
+              <p class="metrica-valor azul" id="m-f1">—</p>
+              <p class="metrica-sub">Balance P/R</p>
+            </div>
+            <div class="metrica-card">
+              <p class="metrica-nombre">AUC-ROC</p>
+              <p class="metrica-valor verde" id="m-auc">—</p>
+              <p class="metrica-sub">Área bajo curva ROC</p>
+            </div>
+            <div class="metrica-card">
+              <p class="metrica-nombre">Muestras</p>
+              <p class="metrica-valor morado" id="m-muestras">—</p>
+              <p class="metrica-sub">Total evaluadas</p>
+            </div>
+          </div>
+
+          <!-- Matriz de confusión -->
+          <p class="paso-label" style="margin-top:1.8rem;">
+            <span class="paso-num">CM</span> Matriz de Confusión
+          </p>
+          <div class="cm-wrap">
+            <table class="cm-tabla">
+              <thead>
+                <tr>
+                  <th class="cm-esquina"></th>
+                  <th>Pred. Baja Demanda</th>
+                  <th>Pred. Alta Demanda</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th class="cm-fila-label">Real Baja Demanda</th>
+                  <td class="cm-tn" id="cm-tn">—</td>
+                  <td class="cm-fp" id="cm-fp">—</td>
+                </tr>
+                <tr>
+                  <th class="cm-fila-label">Real Alta Demanda</th>
+                  <td class="cm-fn" id="cm-fn">—</td>
+                  <td class="cm-tp" id="cm-tp">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="modelo-usado-label" id="modelo-usado-label"></p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ══════════════ FOOTER ══════════════ -->
+  <footer class="footer">
+    Bike Sharing ML Predictor &nbsp;·&nbsp; Dataset: UCI Machine Learning Repository
+    &nbsp;·&nbsp; Regresión Logística &amp; RNA
+  </footer>
+
+  <!-- Flask sirve JS desde /static/ -->
+  <script src="/static/script.js"></script>
+</body>
+</html>

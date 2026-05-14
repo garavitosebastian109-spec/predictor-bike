@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+ENV/
+.ipynb_checkpoints
+*.png
+# modelo_rl.pkl
+# modelo_rna.h5
+# scaler_rl.pkl
+# scaler_rna.pkl

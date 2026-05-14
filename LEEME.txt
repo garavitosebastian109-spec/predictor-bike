@@ -1,0 +1,93 @@
+╔══════════════════════════════════════════════════════════════╗
+║         BIKE SHARING — ML PREDICTOR · GUÍA DE USO           ║
+╚══════════════════════════════════════════════════════════════╝
+
+DATASET:
+──────────────────────────────────────────────────────────────
+  UCI Machine Learning Repository — Bike Sharing Dataset
+  https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset
+  731 días (2011–2012), 16 columnas
+
+  VARIABLE OBJETIVO (generada automáticamente al entrenar):
+    alta_demanda = 1  si  cnt > mediana diaria (~4548 viajes)
+    alta_demanda = 0  si  cnt ≤ mediana diaria
+
+ESTRUCTURA DEL PROYECTO:
+──────────────────────────────────────────────────────────────
+  bike_predictor/
+  ├── app.py                  ← Servidor Flask (EJECUTAR ESTE)
+  ├── regresion_logistica.py  ← Entrenamiento Modelo RL
+  ├── red_neuronal.py         ← Entrenamiento Modelo RNA
+  ├── requirements.txt        ← Dependencias Python
+  ├── dataset.csv             ← Dataset UCI (day.csv)
+  ├── LEEME.txt               ← Este archivo
+  ├── static/
+  │   ├── style.css           ← Estilos de la página
+  │   └── script.js           ← Lógica del frontend
+  └── templates/
+      └── index.html          ← Interfaz web
+
+ARCHIVOS GENERADOS AL ENTRENAR:
+──────────────────────────────────────────────────────────────
+  modelo_rl.pkl       ← Modelo de Regresión Logística
+  scaler_rl.pkl       ← Normalizador del modelo RL
+  modelo_rna.h5       ← Red Neuronal entrenada
+  scaler_rna.pkl      ← Normalizador del modelo RNA
+  feature_names.json  ← Nombres de features y mediana
+  resultados_rl.png   ← Gráfica: matriz de confusión + coef.
+  resultados_rna.png  ← Gráfica: loss/accuracy + matriz
+
+PASOS PARA EJECUTAR EN VS CODE:
+──────────────────────────────────────────────────────────────
+1. Instalar dependencias (solo la primera vez):
+      pip install -r requirements.txt
+
+2. Entrenar los modelos (en orden):
+      python regresion_logistica.py
+      python red_neuronal.py
+
+   → Cada script imprime métricas en consola y guarda
+     los archivos .pkl / .h5 en la carpeta raíz.
+
+3. Levantar el servidor Flask:
+      python app.py
+
+4. Abrir en el navegador:
+      http://127.0.0.1:5000
+
+FEATURES USADAS (columnas del dataset):
+──────────────────────────────────────────────────────────────
+  season     Temporada (1=Primav, 2=Verano, 3=Otoño, 4=Inv)
+  yr         Año (0=2011, 1=2012)
+  mnth       Mes (1-12)
+  holiday    Día festivo (0/1)
+  weekday    Día de semana (0=Dom … 6=Sáb)
+  workingday Día laboral (0/1)
+  weathersit Situación climática (1=Despejado … 4=Tormenta)
+  temp       Temperatura normalizada (0-1)
+  atemp      Sensación térmica normalizada (0-1)
+  hum        Humedad normalizada (0-1)
+  windspeed  Velocidad del viento normalizada (0-1)
+
+CSV PARA PREDICCIÓN POR LOTES:
+──────────────────────────────────────────────────────────────
+  El archivo debe tener estas 11 columnas + columna "target":
+    season,yr,mnth,holiday,weekday,workingday,weathersit,
+    temp,atemp,hum,windspeed,target
+
+  Ejemplo de fila:
+    1,0,1,0,6,0,2,0.344167,0.363625,0.805833,0.160446,0
+
+NOTAS IMPORTANTES:
+──────────────────────────────────────────────────────────────
+  - NO abras index.html directamente; usa http://127.0.0.1:5000
+  - Si cambias el dataset, vuelve a entrenar ambos modelos
+  - Columnas "casual", "registered" y "cnt" NO son features
+    (son el conteo que se usa para crear la variable objetivo)
+  - El umbral de decisión es 0.50 para ambos modelos
+
+ENDPOINTS DE LA API (Flask):
+──────────────────────────────────────────────────────────────
+  GET  /estado                → Estado de los modelos + features
+  POST /predecir/individual   → Predicción de un caso
+  POST /predecir/lotes        → Evaluación de un CSV completo

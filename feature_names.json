@@ -1,0 +1,17 @@
+{
+  "features": [
+    "season",
+    "yr",
+    "mnth",
+    "holiday",
+    "weekday",
+    "workingday",
+    "weathersit",
+    "temp",
+    "atemp",
+    "hum",
+    "windspeed"
+  ],
+  "mediana_cnt": 4548.0,
+  "target_col": "alta_demanda"
+}
