@@ -100,8 +100,12 @@ def cargar_feature_names():
 
 @app.route("/")
 def index():
-    """Sirve el index.html desde la carpeta templates/."""
+    print("--> Solicitud recibida en /")
     return render_template("index.html")
+
+@app.route("/health")
+def health():
+    return "OK", 200
 
 
 @app.route("/estado", methods=["GET"])
