@@ -6,7 +6,8 @@ venv/
 ENV/
 .ipynb_checkpoints
 *.png
-# modelo_rl.pkl
-# modelo_rna.h5
+# Archivos de modelos (los quitamos de aqui para que se suban a Railway)
+# *.pkl
+# *.h5
 # scaler_rl.pkl
 # scaler_rna.pkl

@@ -75,12 +75,10 @@ def cargar_modelo(tipo):
     scaler = joblib.load(rutas["scaler"])
 
     if tipo == "rl":
-        modelo = joblib.load(rutas["scaler"]) # Cargar scaler
         modelo = joblib.load(rutas["modelo"])
     else:
-        # Mock temporal para probar si el servidor responde sin TensorFlow
-        modelo = "MOCK_RNA"
-        print("  ! Modo de prueba: RNA deshabilitado para ahorrar RAM")
+        from tensorflow.keras.models import load_model as tf_load
+        modelo = tf_load(rutas["modelo"])
 
     _cache[tipo] = {"modelo": modelo, "scaler": scaler}
     print(f"  ✓ Modelo '{tipo}' cargado en memoria")
@@ -160,11 +158,9 @@ def predecir_individual():
             proba = modelo.predict_proba(X_sc)[0]
             prob0, prob1 = float(proba[0]), float(proba[1])
         else:
-            # Respuesta mock para RNA
-            prob1 = 0.85 
-            prob0 = 0.15
-            pred  = 1
-            print("  ! Predicción RNA usando MOCK (sin TensorFlow)")
+            prob1 = float(modelo.predict(X_sc, verbose=0)[0][0])
+            prob0 = 1.0 - prob1
+            pred  = 1 if prob1 >= 0.5 else 0
 
         return jsonify({
             "prediccion":   pred,
