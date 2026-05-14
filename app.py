@@ -235,8 +235,5 @@ def predecir_lotes():
 
 # ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("\n" + "="*52)
-    print("  🚲  Bike Sharing — ML Predictor iniciado")
-    print("  📌  Abre en tu navegador: http://127.0.0.1:5000")
-    print("="*52 + "\n")
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
